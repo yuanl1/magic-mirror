@@ -98,16 +98,37 @@ function setCommandInSession(intent, session, callback) {
         sessionAttributes = createCommandAttributes(command);
 
         // TODO: Just send a post with the command once available.
-        fetch('http://magic-mirror-app.herokuapp.com/greeting').then(res => res.json()).then((body) => {
-            console.log(body.content);
+        // fetch('http://magic-mirror-app.herokuapp.com/greeting').then(res => res.json()).then((body) => {
+        //     console.log(body.content);
 
-            speechOutput = `Retrieving ${command}. ${body.content}`;
+        //     speechOutput = `Retrieving ${command}. ${body.content}`;
+        //     repromptText = "You can ask what commands are available by asking what commands are available?";
+
+        //     callback(sessionAttributes,
+        //         buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+        // });
+
+        const data = {
+            command,
+        };
+        fetch('http://magic-mirror-app.herokuapp.com/commands', {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: new Headers({
+                'Content-Type': 'application/json',
+            }),
+        }).then(res => res.json()).then((body) => {
+            speechOutput = `Showing ${command}.`;
             repromptText = "You can ask what commands are available by asking what commands are available?";
 
             callback(sessionAttributes,
                 buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+        }).catch(() => {
+            speechOutput = "There was an error setting your command. Please try again.";
+            repromptText = "There was an error setting your command. Please try again.";
+            callback(sessionAttributes,
+                buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
         });
-
     } else {
         speechOutput = "I'm not sure what that command is. Please try again.";
         repromptText = "I'm not sure what that command is. You can tell me your " +
