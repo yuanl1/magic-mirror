@@ -1,4 +1,8 @@
 {
+    "name": "magic-mirror-lambda",
+    "scripts": {
+        "build": "rm builds/lambda.zip && zip -r builds/lambda.zip ."
+    },
     "dependencies": {
         "node-fetch": "2.0.0"
     }
