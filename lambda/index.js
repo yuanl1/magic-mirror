@@ -96,16 +96,25 @@ function setCommandInSession(intent, session, callback) {
     if (commandSlot) {
         const command = commandSlot.value;
         sessionAttributes = createCommandAttributes(command);
-        speechOutput = `Retrieving ${command}.`;
-        repromptText = "You can ask what commands are available by asking what commands are available?";
+
+        // TODO: Just send a post with the command once available.
+        fetch('http://magic-mirror-app.herokuapp.com/greeting').then(res => res.json()).then((body) => {
+            console.log(body.content);
+
+            speechOutput = `Retrieving ${command}. ${body.content}`;
+            repromptText = "You can ask what commands are available by asking what commands are available?";
+
+            callback(sessionAttributes,
+                buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+        });
+
     } else {
         speechOutput = "I'm not sure what that command is. Please try again.";
         repromptText = "I'm not sure what that command is. You can tell me your " +
             'command by saying, show me the weather.';
+        callback(sessionAttributes,
+            buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
     }
-
-    callback(sessionAttributes,
-         buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
 }
 
 function getCommandFromSession(intent, session, callback) {
