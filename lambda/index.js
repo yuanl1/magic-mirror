@@ -1,5 +1,7 @@
 'use strict';
 
+const fetch = require('node-fetch');
+
 /**
  * This sample demonstrates a simple skill built with the Amazon Alexa Skills Kit.
  * The Intent Schema, Custom Slots, and Sample Utterances for this skill, as well as
@@ -9,6 +11,11 @@
  * http://amzn.to/1LGWsLG
  */
 
+const COMMANDS_ENUM = {
+    SUBWAY: 'subway',
+    WEATHER: 'weather',
+    TWITTER: 'twitter',
+};
 
 // --------------- Helpers that build all of the responses -----------------------
 
@@ -48,12 +55,12 @@ function getWelcomeResponse(callback) {
     // If we wanted to initialize the session to have some attributes we could add those here.
     const sessionAttributes = {};
     const cardTitle = 'Welcome';
-    const speechOutput = 'Welcome to the Alexa Skills Kit sample. ' +
-        'Please tell me your favorite color by saying, my favorite color is red';
+    const speechOutput = 'Welcome to the Magic Mirror Alexa Skill. ' +
+        'Please tell me what command to show by saying, show me the weather.';
     // If the user either does not reply to the welcome message or says something that is not
     // understood, they will be prompted again with this text.
-    const repromptText = 'Please tell me your favorite color by saying, ' +
-        'my favorite color is red';
+    const repromptText = 'Please tell me your command by saying, ' +
+        'show me the weather';
     const shouldEndSession = false;
 
     callback(sessionAttributes,
@@ -62,63 +69,70 @@ function getWelcomeResponse(callback) {
 
 function handleSessionEndRequest(callback) {
     const cardTitle = 'Session Ended';
-    const speechOutput = 'Thank you for trying the Alexa Skills Kit sample. Have a nice day!';
+    const speechOutput = 'Thank you for using the Magic Mirror Alexa Skill. Have a nice day!';
     // Setting this to true ends the session and exits the skill.
     const shouldEndSession = true;
 
     callback({}, buildSpeechletResponse(cardTitle, speechOutput, null, shouldEndSession));
 }
 
-function createFavoriteColorAttributes(favoriteColor) {
+function createCommandAttributes(command) {
     return {
-        favoriteColor,
+        command,
     };
 }
 
 /**
  * Sets the color in the session and prepares the speech to reply to the user.
  */
-function setColorInSession(intent, session, callback) {
+function setCommandInSession(intent, session, callback) {
     const cardTitle = intent.name;
-    const favoriteColorSlot = intent.slots.Color;
+    const commandSlot = intent.slots.Command;
     let repromptText = '';
     let sessionAttributes = {};
     const shouldEndSession = false;
     let speechOutput = '';
 
-    if (favoriteColorSlot) {
-        const favoriteColor = favoriteColorSlot.value;
-        sessionAttributes = createFavoriteColorAttributes(favoriteColor);
-        speechOutput = `I now know your favorite color is ${favoriteColor}. You can ask me ` +
-            "your favorite color by saying, what's my favorite color?";
-        repromptText = "You can ask me your favorite color by saying, what's my favorite color?";
-    } else {
-        speechOutput = "I'm not sure what your favorite color is. Please try again.";
-        repromptText = "I'm not sure what your favorite color is. You can tell me your " +
-            'favorite color by saying, my favorite color is red';
-    }
+    if (commandSlot) {
+        const command = commandSlot.value;
+        sessionAttributes = createCommandAttributes(command);
 
-    callback(sessionAttributes,
-         buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+        // TODO: Just send a post with the command once available.
+        fetch('http://magic-mirror-app.herokuapp.com/greeting').then(res => res.json()).then((body) => {
+            console.log(body.content);
+
+            speechOutput = `Retrieving ${command}. ${body.content}`;
+            repromptText = "You can ask what commands are available by asking what commands are available?";
+
+            callback(sessionAttributes,
+                buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+        });
+
+    } else {
+        speechOutput = "I'm not sure what that command is. Please try again.";
+        repromptText = "I'm not sure what that command is. You can tell me your " +
+            'command by saying, show me the weather.';
+        callback(sessionAttributes,
+            buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+    }
 }
 
-function getColorFromSession(intent, session, callback) {
-    let favoriteColor;
+function getCommandFromSession(intent, session, callback) {
+    let command;
     const repromptText = null;
     const sessionAttributes = {};
     let shouldEndSession = false;
     let speechOutput = '';
 
     if (session.attributes) {
-        favoriteColor = session.attributes.favoriteColor;
+        command = session.attributes.command;
     }
 
-    if (favoriteColor) {
-        speechOutput = `Your favorite color is ${favoriteColor}. Goodbye.`;
+    if (command) {
+        speechOutput = `Your current command is ${command}. Goodbye.`;
         shouldEndSession = true;
     } else {
-        speechOutput = "I'm not sure what your favorite color is, you can say, my favorite color " +
-            ' is red';
+        speechOutput = "I'm not sure what your command is, you can say, show me the weather.";
     }
 
     // Setting repromptText to null signifies that we do not want to reprompt the user.
@@ -158,10 +172,10 @@ function onIntent(intentRequest, session, callback) {
     const intentName = intentRequest.intent.name;
 
     // Dispatch to your skill's intent handlers
-    if (intentName === 'MyColorIsIntent') {
-        setColorInSession(intent, session, callback);
-    } else if (intentName === 'WhatsMyColorIntent') {
-        getColorFromSession(intent, session, callback);
+    if (intentName === 'MyCommandIsIntent') {
+        setCommandInSession(intent, session, callback);
+    } else if (intentName === 'WhatsMyCommandsIntent') {
+        getCommandFromSession(intent, session, callback);
     } else if (intentName === 'AMAZON.HelpIntent') {
         getWelcomeResponse(callback);
     } else if (intentName === 'AMAZON.StopIntent' || intentName === 'AMAZON.CancelIntent') {
