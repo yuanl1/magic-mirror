@@ -20,19 +20,17 @@ public class WeatherReportController {
 
     @RequestMapping("/weather")
     public WeatherReport weather(@RequestParam(value="location", defaultValue="New York, NY") String location) throws JAXBException, IOException {
-        int temp = 29;
-        String text = "Breezy";
-
         YahooWeatherService service = new YahooWeatherService();
         LimitDeclaration limitDeclaration = service.getForecastForLocation(location, DegreeUnit.FAHRENHEIT);
         List<Channel> channels = limitDeclaration.first(1);
         if(channels.size() == 0) {
             System.out.println("No weather data found for location");
         }
+        // Condition contains current weather info, while forecasts contains weekly weather info.
         Condition weatherInfo = channels.get(0).getItem().getCondition();
-        List<Forecast> forcasts = channels.get(0).getItem().getForecasts();
+        List<Forecast> forecasts = channels.get(0).getItem().getForecasts();
         Weather weather = new Weather(
-                weatherInfo.getTemp(), forcasts.get(0).getHigh(), forcasts.get(0).getLow(),
+                weatherInfo.getTemp(), forecasts.get(0).getHigh(), forecasts.get(0).getLow(),
                 weatherInfo.getDate().toString(), weatherInfo.getText());
         return new WeatherReport(weather);
     }
