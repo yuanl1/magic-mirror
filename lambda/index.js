@@ -11,6 +11,11 @@ const fetch = require('node-fetch');
  * http://amzn.to/1LGWsLG
  */
 
+const COMMANDS_ENUM = {
+    SUBWAY: 'subway',
+    WEATHER: 'weather',
+    TWITTER: 'twitter',
+};
 
 // --------------- Helpers that build all of the responses -----------------------
 
