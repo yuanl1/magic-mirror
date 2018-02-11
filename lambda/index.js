@@ -108,24 +108,26 @@ function setCommandInSession(intent, session, callback) {
         //         buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
         // });
 
+        // curl -X POST -d "subway" -H "Content-Type: 'application/json'" http://magic-mirror-app.herokuapp.com/commands
+
         const data = {
-            command,
+            command: command,
         };
         fetch('http://magic-mirror-app.herokuapp.com/commands', {
             method: 'POST',
             body: JSON.stringify(data),
-            headers: new Headers({
+            headers: {
                 'Content-Type': 'application/json',
-            }),
+            },
         }).then(res => res.json()).then((body) => {
             speechOutput = `Showing ${command}.`;
             repromptText = "You can ask what commands are available by asking what commands are available?";
 
             callback(sessionAttributes,
                 buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
-        }).catch(() => {
-            speechOutput = "There was an error setting your command. Please try again.";
-            repromptText = "There was an error setting your command. Please try again.";
+        }).catch((error) => {
+            speechOutput = `There was an error setting your command. ${error} Please try again. Command ${command}`;
+            repromptText = `There was an error setting your command. ${error} Please try again.`;
             callback(sessionAttributes,
                 buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
         });
