@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import Weather from './Weather';
 import './index.css';
 
 const WIDGET_ENUM = {
@@ -10,13 +11,20 @@ const WIDGET_ENUM = {
 };
 
 const POLL_INTERVAL = 500;
+const RESET_WIDGET_INTERVAL = 30 * 1000;
 
 class Dashboard extends React.Component {
     constructor(props) {
         super(props);
 
+        // this.state = {
+        //     widget: WIDGET_ENUM.EMPTY,
+        //     data: {},
+        // };
+
         this.state = {
-            widget: WIDGET_ENUM.EMPTY
+          widget: WIDGET_ENUM.WEATHER,
+          data: {"condition":{"temp":45,"high":49,"low":37,"date":"Sat Feb 10 23:00:00 UTC 2018","description":"Cloudy"}},
         };
 
         this.getCommand = this.getCommand.bind(this);
@@ -34,10 +42,26 @@ class Dashboard extends React.Component {
     async getCommand() {
         try {
             // const res = await fetch('http://magic-mirror-app.herokuapp.com/getlastcommand');
-            const res = await fetch('http://localhost:8080/greeting');
+            const res = await fetch('http://magic-mirror-app.herokuapp.com/getlastcommand');
             const body = await res.json();
-            console.log(body);
-            this.setState({widget: body.command});
+
+            if ((Date.now() - body.timestamp) > RESET_WIDGET_INTERVAL) {
+              this.setState({widget: WIDGET_ENUM.EMPTY, data: {}});
+              return;
+            }
+
+            switch (body.command) {
+              case WIDGET_ENUM.WEATHER:
+                const weatherRes = await fetch('http://magic-mirror-app.herokuapp.com/weather');
+                const weatherBody = await weatherRes.json();
+                this.setState({data: weatherBody, widget: body.command});
+              case WIDGET_ENUM.SUBWAY:
+                break;
+              case WIDGET_ENUM.TWITTER:
+                break;
+              default:
+                break;
+            }
         } catch (error) {
             console.log('Error!');
             console.log(error);
@@ -45,10 +69,10 @@ class Dashboard extends React.Component {
     }
 
     renderWidget() {
-        const {widget} = this.state;
+        const {widget, data} = this.state;
         switch(widget) {
             case WIDGET_ENUM.WEATHER:
-                return <Weather />;
+                return <Weather data={data} />;
             default:
                 return <div></div>;
         }
