@@ -2,7 +2,6 @@ package mirror;
 
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.Array;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,13 +32,14 @@ public class CommandsController {
     }
 
     @RequestMapping(value = "/commands", method = RequestMethod.POST)
-    public void commands(@RequestBody PostCommandRequest request) throws IllegalArgumentException {
+    public PostCommandRequest commands(@RequestBody PostCommandRequest request) throws IllegalArgumentException {
         if(!possible_commands.contains(request.command)) {
             System.out.println("Command not supported.");
             throw new IllegalArgumentException("Post argument must be either \"weather\", \"twitter\", or \"subway\"");
         }
         last_request = request.command;
         timestamp = System.currentTimeMillis();
+        return request;
     }
 
     @RequestMapping(value="/getlastcommand")
