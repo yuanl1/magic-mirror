@@ -16,7 +16,7 @@ class Dashboard extends React.Component {
         super(props);
 
         this.state = {
-            widget: WIDGET_ENUM.EMPTY,
+            widget: WIDGET_ENUM.EMPTY
         };
 
         this.getCommand = this.getCommand.bind(this);
@@ -47,12 +47,10 @@ class Dashboard extends React.Component {
     renderWidget() {
         const {widget} = this.state;
         switch(widget) {
-            case WIDGET_ENUM.EMPTY:
-                return <div>Empty</div>;
             case WIDGET_ENUM.WEATHER:
-                return <div>Weather</div>;
+                return <Weather />;
             default:
-                return <div>Empty</div>;
+                return <div></div>;
         }
     }
 
