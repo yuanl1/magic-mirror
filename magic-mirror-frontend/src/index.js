@@ -2,71 +2,78 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-class Square extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      value: null,
-    };
-  }
+const WIDGET_ENUM = {
+    EMPTY: 'empty',
+    WEATHER: 'weather',
+    SUBWAY: 'subway',
+    TWITTER: 'twitter',
+};
 
-  render() {
-    return (
-      <button className="square" onClick={() => this.setState({value: 'X'})}>
-        {this.state.value}
-      </button>
-    );
-  }
-}
+const POLL_INTERVAL = 500;
 
-class Board extends React.Component {
-  renderSquare(i) {
-    return <Square value={i} />;
-  }
+class Dashboard extends React.Component {
+    constructor(props) {
+        super(props);
 
-  render() {
-    const status = 'Next player: X';
+        this.state = {
+            widget: WIDGET_ENUM.EMPTY,
+        };
 
-    return (
-      <div>
-        <div className="status">{status}</div>
-        <div className="board-row">
-          {this.renderSquare(0)}
-          {this.renderSquare(1)}
-          {this.renderSquare(2)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(3)}
-          {this.renderSquare(4)}
-          {this.renderSquare(5)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(6)}
-          {this.renderSquare(7)}
-          {this.renderSquare(8)}
-        </div>
-      </div>
-    );
-  }
-}
+        this.getCommand = this.getCommand.bind(this);
+        this.renderWidget = this.renderWidget.bind(this);
+    }
 
-class Game extends React.Component {
-  render() {
-    return (
-      <div className="game">
-        <div className="game-board">
-          <Board />
+    componentDidMount() {
+        this.intervalPointer = setInterval(this.getCommand, POLL_INTERVAL);
+    }
+
+    componentWillUnmount() {
+        clearInterval(this.intervalPointer);
+    }
+
+    async getCommand() {
+        try {
+            // const res = await fetch('http://magic-mirror-app.herokuapp.com/getlastcommand');
+            const res = await fetch('http://localhost:8080/greeting');
+            const body = await res.json();
+            console.log(body);
+            this.setState({widget: body.command});
+        } catch (error) {
+            console.log('Error!');
+            console.log(error);
+        }
+    }
+
+    renderWidget() {
+        const {widget} = this.state;
+        switch(widget) {
+            case WIDGET_ENUM.EMPTY:
+                return <div>Empty</div>;
+            case WIDGET_ENUM.WEATHER:
+                return <div>Weather</div>;
+            default:
+                return <div>Empty</div>;
+        }
+    }
+
+    render() {
+      const widgetElement = this.renderWidget();
+
+      return (
+        <div className="game">
+          <div className="game-board">
+            {widgetElement}
+          </div>
+          <div className="game-info">
+            <div>{/* status */}</div>
+            <ol>{/* TODO */}</ol>
+          </div>
         </div>
-        <div className="game-info">
-          <div>{/* status */}</div>
-          <ol>{/* TODO */}</ol>
-        </div>
-      </div>
-    );
-  }
+      );
+    }
 }
 
 ReactDOM.render(
-  <Game />,
-  document.getElementById('root')
+<Dashboard />,
+document.getElementById('root')
 );
