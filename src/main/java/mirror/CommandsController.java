@@ -33,12 +33,12 @@ public class CommandsController {
     }
 
     @RequestMapping(value = "/commands", method = RequestMethod.POST)
-    public void commands(@RequestBody String body) throws IllegalArgumentException {
-        if(!possible_commands.contains(body)) {
+    public void commands(@RequestBody PostCommandRequest request) throws IllegalArgumentException {
+        if(!possible_commands.contains(request.command)) {
             System.out.println("Command not supported.");
             throw new IllegalArgumentException("Post argument must be either \"weather\", \"twitter\", or \"subway\"");
         }
-        last_request = body;
+        last_request = request.command;
         timestamp = System.currentTimeMillis();
     }
 
