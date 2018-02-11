@@ -1,0 +1,10 @@
+body {
+    font: 14px 'Rubik', sans-serif;
+    color: white;
+    margin: 20px;
+    background-color: black;
+}
+
+h1 {
+    font-size: 5em;
+}
