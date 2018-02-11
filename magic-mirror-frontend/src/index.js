@@ -11,21 +11,21 @@ const WIDGET_ENUM = {
 };
 
 const POLL_INTERVAL = 500;
-const RESET_WIDGET_INTERVAL = 30 * 1000;
+const RESET_WIDGET_INTERVAL = 10 * 1000;
 
 class Dashboard extends React.Component {
     constructor(props) {
         super(props);
 
-        // this.state = {
-        //     widget: WIDGET_ENUM.EMPTY,
-        //     data: {},
-        // };
-
         this.state = {
-          widget: WIDGET_ENUM.WEATHER,
-          data: {"condition":{"temp":45,"high":49,"low":37,"date":"Sat Feb 10 23:00:00 UTC 2018","description":"Cloudy"}},
+            widget: WIDGET_ENUM.EMPTY,
+            data: {},
         };
+
+        // this.state = {
+        //   widget: WIDGET_ENUM.WEATHER,
+        //   data: {"condition":{"temp":45,"high":49,"low":37,"date":"Sat Feb 10 23:00:00 UTC 2018","description":"Cloudy"}},
+        // };
 
         this.getCommand = this.getCommand.bind(this);
         this.renderWidget = this.renderWidget.bind(this);
@@ -41,7 +41,7 @@ class Dashboard extends React.Component {
 
     async getCommand() {
         try {
-            // const res = await fetch('http://magic-mirror-app.herokuapp.com/getlastcommand');
+            //const res = await fetch('http://localhost:8080/getlastcommand');
             const res = await fetch('http://magic-mirror-app.herokuapp.com/getlastcommand');
             const body = await res.json();
 
@@ -52,6 +52,7 @@ class Dashboard extends React.Component {
 
             switch (body.command) {
               case WIDGET_ENUM.WEATHER:
+                //const weatherRes = await fetch('http://localhost:8080/weather');
                 const weatherRes = await fetch('http://magic-mirror-app.herokuapp.com/weather');
                 const weatherBody = await weatherRes.json();
                 this.setState({data: weatherBody, widget: body.command});
